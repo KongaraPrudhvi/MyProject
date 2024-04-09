@@ -2,16 +2,10 @@ package com.example.MyProject.controller;
 
 import com.example.MyProject.entity.MerchantDetails;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import com.example.MyProject.repository.MerchantDetailsRepository;
 import com.example.MyProject.service.IExcelDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,18 +15,42 @@ public class GetMerchantDetails {
     @Autowired
     IExcelDataService excelService;
 
-    @GetMapping("/readData")
+    @GetMapping("/readdata")
     public ResponseEntity<List<MerchantDetails>> readAllData(){
         List<MerchantDetails> excelDataAsList=excelService.getExcelDataAslist();
+
+        return new ResponseEntity<>(excelDataAsList, HttpStatus.OK);
+    }
+    @GetMapping("/readdatafromdb")
+    public ResponseEntity<List<MerchantDetails>> readAllDBData(){
+        List<MerchantDetails> merchantList=excelService.getDbDetails();
+        return new ResponseEntity<>(merchantList,HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/readdata",params = {"merchantId"})
+    public ResponseEntity<List<MerchantDetails>> readData(@RequestParam String merchantId) {
+        List<MerchantDetails> excelDataAsList=excelService.getDetailsById(merchantId);
         return new ResponseEntity<>(excelDataAsList, HttpStatus.OK);
     }
 
-    @PostMapping("/readAndUpdate")
-    public ResponseEntity<String> updateAllData(){
-       excelService.saveExcelData();
+    @GetMapping(value="/readdatafromdb",params={"merchantId"})
+    public ResponseEntity<List<MerchantDetails>> readDBData(@RequestParam String merchantId){
+        List<MerchantDetails> merchantList=excelService.getDbDetailsById(merchantId);
+            return new ResponseEntity<>(merchantList,HttpStatus.OK);
+        }
+
+    @PostMapping("/readandinsert")
+    public ResponseEntity<String> InsertData(){
+         excelService.saveExcelData();
         return new ResponseEntity<>("Success",HttpStatus.OK);
     }
 
-
-
+    @PutMapping("/update")
+    public ResponseEntity<String> updateList(@RequestBody MerchantDetails model){
+        excelService.updateDetails(model);
+        return new ResponseEntity<>("Success",HttpStatus.OK);
+    }
 }
+
+
+
